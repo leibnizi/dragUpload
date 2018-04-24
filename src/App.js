@@ -4,7 +4,7 @@ import request from 'superagent';
 import './App.css';
 
 const CLOUDINARY_UPLOAD_PRESET = 'bmzjbxoq';
-const CLOUDINARY_UPLOAD_URL = 'https://api.cloudinary.com/v1_1/react-cloudinary/upload';
+const CLOUDINARY_UPLOAD_URL = 'http://api.v2.msparis.com/common/upload';
 
 export default class App extends React.Component {
   constructor(props) {
@@ -12,7 +12,7 @@ export default class App extends React.Component {
 
     this.state = {
       uploadedFile: null,
-      uploadedFileCloudinaryUrl: ''
+      uploadedFileCloudinaryUrl: []
     };
   }
 
@@ -35,31 +35,40 @@ export default class App extends React.Component {
       }
 
       if (response.body.secure_url !== '') {
-        this.setState({
-          uploadedFileCloudinaryUrl: response.body.secure_url
-        });
+        this.setState((prevState)=>({
+          uploadedFileCloudinaryUrl: prevState.uploadedFileCloudinaryUrl+','+response.body.data[0].url
+        }))
       }
     });
   }
 
   render() {
+    const { uploadedFileCloudinaryUrl } = this.state
     return (
       <form>
         <div className="FileUpload">
           <Dropzone
             onDrop={this.onImageDrop.bind(this)}
-            multiple={false}
-            accept="image/*">
+            multiple={true}
+            accept="image/*"
+          >
             <div>Drop an image or click to select a file to upload.</div>
           </Dropzone>
         </div>
 
         <div>
-          {this.state.uploadedFileCloudinaryUrl === '' ? null :
-          <div>
-            <p>{this.state.uploadedFile.name}</p>
-            <img src={this.state.uploadedFileCloudinaryUrl} />
-          </div>}
+          {
+            this.state.uploadedFileCloudinaryUrl.length===0 ? null :
+            <div>
+              {
+                uploadedFileCloudinaryUrl.split(',').map((item,index)=>{
+                  return (
+                    <img key={index} src={item} />
+                  )
+                })
+              }
+            </div>
+          }
         </div>
       </form>
     )
